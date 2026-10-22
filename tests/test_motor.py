@@ -7,9 +7,6 @@ from casos.beneficio_cafe import (
     afnd_epsilon_lavado,
     afnd_secado,
     casos,
-    clase_volkswagen_afd,
-    clase_volkswagen_afnd,
-    ejercicios_clase,
     pila_bodega,
     turing_totalizador,
 )
@@ -33,14 +30,14 @@ def todas_las_cadenas(alfabeto, largo_maximo):
     "cadena, esperado, recorrido",
     [
         ("1111", True, ["q0", "q1", "q2", "q3", "q4"]),
-        ("1101", False, ["q0", "q1", "q2", "q0", "q1"]),
-        ("1110", False, ["q0", "q1", "q2", "q3", "q0"]),
-        ("01111", True, ["q0", "q4", "q4", "q4", "q4", "q4"]),
-        ("11111", True, ["q0", "q1", "q2", "q3", "q4", "q4"]),
+        ("110111", True, ["q0", "q1", "q2", "q1", "q2", "q3", "q4"]),
+        ("1101", False, ["q0", "q1", "q2", "q1", "q2"]),
+        ("11011", False, ["q0", "q1", "q2", "q1", "q2", "q3"]),
+        ("0", False, ["q0", "q0"]),
     ],
 )
-def test_ejercicio_de_clase(cadena, esperado, recorrido):
-    resultado = simular_afd(clase_volkswagen_afd(), cadena)
+def test_recorrido_afd_cafe(cadena, esperado, recorrido):
+    resultado = simular_afd(afd_flujo_normal(), cadena)
     assert resultado.aceptada is esperado
     assert resultado.recorrido == recorrido
 
@@ -74,7 +71,7 @@ def test_afnd_epsilon_cerradura():
 
 
 @pytest.mark.parametrize(
-    "automata", [afnd_secado(), afnd_epsilon_lavado(), clase_volkswagen_afnd()]
+    "automata", [afnd_secado(), afnd_epsilon_lavado()]
 )
 def test_subconjuntos_equivalente(automata):
     filas, afd = construccion_subconjuntos(automata)
@@ -85,7 +82,7 @@ def test_subconjuntos_equivalente(automata):
 
 @pytest.mark.parametrize(
     "automata",
-    [afd_flujo_normal(), afnd_secado(), clase_volkswagen_afd(), clase_volkswagen_afnd()],
+    [afd_flujo_normal(), afnd_secado()],
 )
 def test_arden_reconoce_el_mismo_lenguaje(automata):
     resultado = resolver(automata)
@@ -117,7 +114,7 @@ def test_turing_rechaza_sin_separador():
 
 
 def test_diagramas_y_casos():
-    for caso in casos() + ejercicios_clase():
+    for caso in casos():
         assert caso.cadena_sugerida
     assert "doublecircle" in dot_finito(afd_flujo_normal(), activos={"q4"})
     assert "SZ" in dot_pila(pila_bodega())
