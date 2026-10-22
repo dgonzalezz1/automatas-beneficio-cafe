@@ -543,11 +543,6 @@ with st.sidebar:
     st.markdown("### Configuración")
     metodo = st.radio("Método de solución", METODOS, key="metodo")
     origen = st.radio("Origen del modelo", [ORIGEN_CASO, ORIGEN_MANUAL], key=f"origen_{metodo}")
-    st.divider()
-    st.caption(
-        "Convención del caso de aplicación: 1 indica que el lote aprueba el control de calidad "
-        "de la etapa; 0 indica que el lote se envía a reproceso."
-    )
 
 
 # Contenido principal
