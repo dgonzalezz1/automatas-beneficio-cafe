@@ -150,53 +150,6 @@ def turing_totalizador() -> MaquinaTuring:
     )
 
 
-def clase_volkswagen_afnd() -> AutomataFinito:
-    """Diagrama de la primera diapositiva de clase: desde q0 con 1 se puede ir a q1 o q2."""
-    return AutomataFinito(
-        estados=["q0", "q1", "q2", "q3", "q4"],
-        alfabeto=["0", "1"],
-        transiciones={
-            "q0": {"0": ["q4"], "1": ["q1", "q2"]},
-            "q1": {"1": ["q0"]},
-            "q2": {"1": ["q3"]},
-            "q3": {"0": ["q0"]},
-        },
-        inicial="q0",
-        finales={"q4"},
-        descripciones={
-            "q0": "Corte de piezas metálicas y control de calidad",
-            "q1": "Ensamblado de chasis y carrocería",
-            "q2": "Pintura",
-            "q3": "Verificación",
-            "q4": "Ensamble de partes mecánicas",
-        },
-    )
-
-
-def clase_volkswagen_afd() -> AutomataFinito:
-    """Matriz de transición corregida de la tercera diapositiva de clase."""
-    return AutomataFinito(
-        estados=["q0", "q1", "q2", "q3", "q4"],
-        alfabeto=["0", "1"],
-        transiciones={
-            "q0": {"0": ["q4"], "1": ["q1"]},
-            "q1": {"0": ["q0"], "1": ["q2"]},
-            "q2": {"0": ["q0"], "1": ["q3"]},
-            "q3": {"0": ["q0"], "1": ["q4"]},
-            "q4": {"0": ["q4"], "1": ["q4"]},
-        },
-        inicial="q0",
-        finales={"q4"},
-        descripciones={
-            "q0": "Corte de piezas metálicas y control de calidad",
-            "q1": "Ensamblado de chasis y carrocería",
-            "q2": "Pintura",
-            "q3": "Verificación",
-            "q4": "Proceso aceptado",
-        },
-    )
-
-
 METODOS = [
     "AFD",
     "AFND",
@@ -317,30 +270,3 @@ def caso_por_metodo(metodo: str) -> Caso:
             return caso
     raise KeyError(metodo)
 
-
-def ejercicios_clase() -> list[Caso]:
-    return [
-        Caso(
-            clave="vw_afd",
-            metodo="AFD",
-            titulo="Ejercicio de clase: proceso Volkswagen (AFD)",
-            contexto="Matriz de transición de la tercera diapositiva. 0 = Fix, 1 = PLC.",
-            significado_simbolos={"0": "Fix", "1": "PLC"},
-            automata=clase_volkswagen_afd(),
-            cadenas_ejemplo=["1111", "1101", "1110", "01111", "11111"],
-            cadena_sugerida="1111",
-        ),
-        Caso(
-            clave="vw_afnd",
-            metodo="AFND-ε y conversión a AFD",
-            titulo="Ejercicio de clase: diagrama Volkswagen (AFND)",
-            contexto=(
-                "Diagrama de la primera diapositiva. Desde q0 con 1 se puede ir a q1 o a q2, "
-                "por lo que es un AFND y se puede convertir a AFD por subconjuntos."
-            ),
-            significado_simbolos={"0": "Fix", "1": "PLC"},
-            automata=clase_volkswagen_afnd(),
-            cadenas_ejemplo=["0", "110", "1110", "1100"],
-            cadena_sugerida="1100",
-        ),
-    ]

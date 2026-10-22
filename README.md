@@ -13,7 +13,7 @@ La aplicación modela el proceso de un beneficio húmedo de café en Guatemala c
 | Autómata de Pila | Control de existencias de sacos en bodega: cada despacho debe tener un ingreso previo |
 | Máquina de Turing | Totalizador de producción: suma en notación unaria los sacos de dos turnos |
 
-La aplicación solicita los cuatro parámetros del enunciado: número de nodos, alfabeto, cadena a analizar y método de solución. Además de los casos del beneficio, incluye el ejercicio de clase del proceso Volkswagen y un modo de definición manual para analizar cualquier autómata.
+La aplicación solicita los cuatro parámetros del enunciado: número de nodos, alfabeto, cadena a analizar y método de solución. Además de los casos del beneficio, incluye un modo de definición manual para analizar cualquier autómata.
 
 ## Requisitos
 
@@ -73,7 +73,7 @@ Para volver a ejecutarla otro día basta con entrar a la carpeta del proyecto, a
 ## Guía de prueba
 
 1. Seleccione un método de solución en la barra lateral.
-2. Elija el origen del modelo: caso de aplicación, ejercicio de clase o definición manual.
+2. Elija el origen del modelo: caso de aplicación (beneficio de café) o definición manual.
 3. Escriba la cadena a analizar. Cada caso muestra cadenas de ejemplo aceptadas y rechazadas.
 4. Use el control "Paso del recorrido" o el botón "Reproducir recorrido" para ver la evolución del autómata.
 
@@ -87,7 +87,6 @@ Cadenas sugeridas para la verificación:
 | Autómata de Pila | 1100, 110100 | 100, 0110 |
 | Lema de Arden | 1111, 110111 | 1101 |
 | Máquina de Turing | 111011 (resultado 11111) | 111 |
-| Ejercicio de clase (AFD) | 1111, 01111, 11111 | 1101, 1110 |
 
 ## Pruebas automáticas
 
@@ -97,9 +96,9 @@ Con el entorno virtual activo:
 python -m pytest
 ```
 
-El resultado esperado es `28 passed`.
+El resultado esperado es `25 passed`.
 
-Las pruebas verifican el ejercicio de clase, la equivalencia entre cada AFND y su AFD por subconjuntos, que la expresión regular obtenida con el Lema de Arden reconoce exactamente el mismo lenguaje que el autómata, y los casos del autómata de pila y la máquina de Turing.
+Las pruebas verifican el recorrido del AFD del beneficio, la equivalencia entre cada AFND y su AFD por subconjuntos, que la expresión regular obtenida con el Lema de Arden reconoce exactamente el mismo lenguaje que el autómata, y los casos del autómata de pila y la máquina de Turing.
 
 ## Arquitectura
 
@@ -110,7 +109,7 @@ motor/arden.py          Sistema de ecuaciones y resolución con el Lema de Arden
 motor/pila.py           Autómata de pila determinista
 motor/turing.py         Máquina de Turing determinista
 motor/graficos.py       Diagramas en lenguaje DOT (Graphviz)
-casos/beneficio_cafe.py Casos del beneficio de café y ejercicios de clase
+casos/beneficio_cafe.py Casos del beneficio de café
 tests/                  Pruebas automáticas
 ```
 

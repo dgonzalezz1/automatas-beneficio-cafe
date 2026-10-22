@@ -12,7 +12,7 @@ import pandas as pd
 import streamlit as st
 from automata.base.exceptions import AutomatonException
 
-from casos.beneficio_cafe import METODOS, Caso, caso_por_metodo, ejercicios_clase
+from casos.beneficio_cafe import METODOS, Caso, caso_por_metodo
 from motor.arden import expresion_a_python, resolver
 from motor.finitos import (
     EPSILON,
@@ -27,7 +27,6 @@ from motor.pila import AutomataPila, ReglaPila, simular_pila
 from motor.turing import BLANCO, MOVIMIENTOS_VISIBLES, MaquinaTuring, ReglaTuring, simular_turing
 
 ORIGEN_CASO = "Caso de aplicación: beneficio de café"
-ORIGEN_CLASE = "Ejercicio de clase"
 ORIGEN_MANUAL = "Definición manual"
 
 st.set_page_config(
@@ -543,11 +542,7 @@ def vista_turing(maquina: MaquinaTuring, cadena: str, clave: str) -> None:
 with st.sidebar:
     st.markdown("### Configuración")
     metodo = st.radio("Método de solución", METODOS, key="metodo")
-    origenes = [ORIGEN_CASO]
-    if any(c.metodo == metodo for c in ejercicios_clase()):
-        origenes.append(ORIGEN_CLASE)
-    origenes.append(ORIGEN_MANUAL)
-    origen = st.radio("Origen del modelo", origenes, key=f"origen_{metodo}")
+    origen = st.radio("Origen del modelo", [ORIGEN_CASO, ORIGEN_MANUAL], key=f"origen_{metodo}")
     st.divider()
     st.caption(
         "Convención del caso de aplicación: 1 indica que el lote aprueba el control de calidad "
@@ -571,10 +566,7 @@ if origen == ORIGEN_MANUAL:
         cadena = parametros(len(automata.estados), automata.alfabeto, metodo, "manual_tm", "")
     clave = f"manual_{metodo}"
 else:
-    if origen == ORIGEN_CLASE:
-        caso = next(c for c in ejercicios_clase() if c.metodo == metodo)
-    else:
-        caso = caso_por_metodo(metodo)
+    caso = caso_por_metodo(metodo)
     automata = caso.automata
     mostrar_contexto(caso, automata.descripciones)
     cadena = parametros(len(automata.estados), automata.alfabeto, metodo, caso.clave, caso.cadena_sugerida)
