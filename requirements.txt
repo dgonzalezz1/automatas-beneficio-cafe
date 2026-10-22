@@ -1,0 +1,4 @@
+automata-lib==9.2.0
+streamlit==1.66.1
+pandas>=2.2
+pytest>=8.0
