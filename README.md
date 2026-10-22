@@ -55,7 +55,7 @@ Cadenas sugeridas para la verificación:
 | --- | --- | --- |
 | AFD | 1111, 110111 | 1101, 11011 |
 | AFND | 11101, 1110001 | 11001 |
-| AFND-ε | 11111, 1110111 | 110111 |
+| AFND-ε | 11111, 1110111 | 1101 |
 | Autómata de Pila | 1100, 110100 | 100, 0110 |
 | Máquina de Turing | 111011 (resultado 11111) | 111 |
 | Ejercicio de clase (AFD) | 1111, 01111, 11111 | 1101, 1110 |
