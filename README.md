@@ -15,6 +15,14 @@ La aplicación modela el proceso de un beneficio húmedo de café en Guatemala c
 
 La aplicación solicita los cuatro parámetros del enunciado: número de nodos, alfabeto, cadena a analizar y método de solución. Además de los casos del beneficio, incluye un modo de definición manual para analizar cualquier autómata.
 
+## Versión en línea
+
+La aplicación está publicada en Streamlit Community Cloud y se puede usar sin instalar nada:
+
+https://automatas-beneficio-cafe.streamlit.app/
+
+Si la página muestra un aviso de que la aplicación está en reposo, presione el botón para activarla y espere unos 30 segundos.
+
 ## Requisitos
 
 - Python 3.11 o superior (probado con 3.11, 3.13 y 3.14). Python 3.10 no es compatible porque Streamlit 1.66 exige 3.11.
