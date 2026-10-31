@@ -1,20 +1,8 @@
-import re
-
 import pytest
 
-from casos.beneficio_cafe import (
-    afd_flujo_normal,
-    afnd_epsilon_lavado,
-    afnd_secado,
-    casos,
-    pila_bodega,
-    turing_totalizador,
-)
-from motor.arden import expresion_a_python, resolver
-from motor.finitos import construccion_subconjuntos, simular_afd, simular_afnd
-from motor.graficos import dot_finito, dot_pila, dot_turing
-from motor.pila import simular_pila
-from motor.turing import simular_turing
+from casos.beneficio_cafe import afnd_beneficio, caso_beneficio
+from motor.finitos import AutomataFinito, construccion_subconjuntos, simular_afd, simular_afnd
+from motor.graficos import dot_finito
 
 
 def todas_las_cadenas(alfabeto, largo_maximo):
@@ -26,96 +14,64 @@ def todas_las_cadenas(alfabeto, largo_maximo):
     return cadenas
 
 
+def test_el_caso_es_un_afnd():
+    afnd = afnd_beneficio()
+    assert afnd.tipo() == "AFND"
+    assert afnd.destinos("q2", "1") == ["q3", "q4"]
+
+
 @pytest.mark.parametrize(
-    "cadena, esperado, recorrido",
+    "cadena, recorrido, esperado",
     [
-        ("1111", True, ["q0", "q1", "q2", "q3", "q4"]),
-        ("110111", True, ["q0", "q1", "q2", "q1", "q2", "q3", "q4"]),
-        ("1101", False, ["q0", "q1", "q2", "q1", "q2"]),
-        ("11011", False, ["q0", "q1", "q2", "q1", "q2", "q3"]),
-        ("0", False, ["q0", "q0"]),
+        ("1111", [{"q0"}, {"q1"}, {"q2"}, {"q3", "q4"}, {"q5"}], True),
+        ("11101", [{"q0"}, {"q1"}, {"q2"}, {"q3", "q4"}, {"q4"}, {"q5"}], True),
+        ("11001", [{"q0"}, {"q1"}, {"q2"}, {"q1"}, {"q0"}, {"q1"}], False),
+        ("111", [{"q0"}, {"q1"}, {"q2"}, {"q3", "q4"}], False),
     ],
 )
-def test_recorrido_afd_cafe(cadena, esperado, recorrido):
-    resultado = simular_afd(afd_flujo_normal(), cadena)
-    assert resultado.aceptada is esperado
-    assert resultado.recorrido == recorrido
+def test_recorrido_por_conjuntos(cadena, recorrido, esperado):
+    r = simular_afnd(afnd_beneficio(), cadena)
+    assert r.recorrido == recorrido
+    assert r.aceptada is esperado
 
 
-def test_afd_cafe():
-    afd = afd_flujo_normal()
-    assert afd.tipo() == "AFD" and afd.es_completo()
-    assert simular_afd(afd, "110111").aceptada
-    assert not simular_afd(afd, "11011").aceptada
+def test_ejemplos_del_caso_coinciden_con_su_descripcion():
+    caso = caso_beneficio()
+    aceptadas = {e.cadena for e in caso.ejemplos if caso.automata.acepta(e.cadena)}
+    assert aceptadas == {"1111", "11101", "1110001", "110111"}
+    assert caso.automata.acepta(caso.cadena_sugerida)
 
 
 def test_simbolo_fuera_del_alfabeto():
     with pytest.raises(ValueError):
-        simular_afd(afd_flujo_normal(), "1121")
+        simular_afnd(afnd_beneficio(), "1121")
 
 
-def test_afnd_cafe():
-    afnd = afnd_secado()
-    assert afnd.tipo() == "AFND"
-    r = simular_afnd(afnd, "11101")
-    assert r.aceptada
-    assert r.recorrido[3] == {"q3", "q4"}
-    assert not simular_afnd(afnd, "11001").aceptada
+def test_conjunto_vacio_rechaza():
+    afnd = AutomataFinito(
+        estados=["q0", "q1"], alfabeto=["0", "1"],
+        transiciones={"q0": {"1": ["q0", "q1"]}}, inicial="q0", finales={"q1"},
+    )
+    r = simular_afnd(afnd, "10")
+    assert not r.aceptada
+    assert r.recorrido[-1] == set()
 
 
-def test_afnd_epsilon_cerradura():
-    a = afnd_epsilon_lavado()
-    assert a.tipo() == "AFND-ε"
-    assert a.cerradura_epsilon({"q3"}) == {"q3", "q4"}
-    assert simular_afnd(a, "1110111").aceptada
+def test_subconjuntos_del_caso():
+    filas, afd = construccion_subconjuntos(afnd_beneficio())
+    assert [(f.nombre, sorted(f.conjunto)) for f in filas] == [
+        ("A", ["q0"]), ("B", ["q1"]), ("C", ["q2"]), ("D", ["q3", "q4"]), ("E", ["q4"]), ("F", ["q5"]),
+    ]
+    assert afd.finales == {"F"}
 
 
-@pytest.mark.parametrize(
-    "automata", [afnd_secado(), afnd_epsilon_lavado()]
-)
-def test_subconjuntos_equivalente(automata):
-    filas, afd = construccion_subconjuntos(automata)
-    assert afd.tipo() == "AFD"
-    for cadena in todas_las_cadenas(automata.alfabeto, 8):
-        assert afd.acepta(cadena) == automata.acepta(cadena), cadena
+def test_afd_equivalente_reconoce_el_mismo_lenguaje():
+    afnd = afnd_beneficio()
+    _, afd = construccion_subconjuntos(afnd)
+    for cadena in todas_las_cadenas(afnd.alfabeto, 9):
+        assert simular_afd(afd, cadena).aceptada == simular_afnd(afnd, cadena).aceptada, cadena
 
 
-@pytest.mark.parametrize(
-    "automata",
-    [afd_flujo_normal(), afnd_secado()],
-)
-def test_arden_reconoce_el_mismo_lenguaje(automata):
-    resultado = resolver(automata)
-    patron = re.compile(expresion_a_python(resultado.expresion))
-    for cadena in todas_las_cadenas(automata.alfabeto, 9):
-        assert bool(patron.fullmatch(cadena)) == automata.acepta(cadena), (
-            cadena,
-            resultado.expresion,
-        )
-
-
-@pytest.mark.parametrize(
-    "cadena, esperado",
-    [("1100", True), ("101100", True), ("", True), ("100", False), ("0110", False), ("110", False)],
-)
-def test_pila_bodega(cadena, esperado):
-    assert simular_pila(pila_bodega(), cadena).aceptada is esperado
-
-
-@pytest.mark.parametrize("a, b", [(3, 2), (1, 1), (5, 1), (2, 4)])
-def test_turing_suma(a, b):
-    r = simular_turing(turing_totalizador(), "1" * a + "0" + "1" * b)
-    assert r.aceptada
-    assert r.salida == "1" * (a + b)
-
-
-def test_turing_rechaza_sin_separador():
-    assert not simular_turing(turing_totalizador(), "111").aceptada
-
-
-def test_diagramas_y_casos():
-    for caso in casos():
-        assert caso.cadena_sugerida
-    assert "doublecircle" in dot_finito(afd_flujo_normal(), activos={"q4"})
-    assert "SZ" in dot_pila(pila_bodega())
-    assert "q3" in dot_turing(turing_totalizador())
+def test_diagrama():
+    dot = dot_finito(afnd_beneficio(), activos={"q3", "q4"})
+    assert "doublecircle" in dot and '"q2" -> "q3"' in dot and '"q2" -> "q4"' in dot

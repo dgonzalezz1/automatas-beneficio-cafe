@@ -10,8 +10,6 @@ from collections import defaultdict
 from collections.abc import Iterable
 
 from .finitos import EPSILON, EPSILON_VISIBLE, AutomataFinito
-from .pila import AutomataPila
-from .turing import MOVIMIENTOS, MaquinaTuring
 
 COLOR_PRINCIPAL = "#1F3A5F"
 COLOR_RESALTE = "#9A6B12"
@@ -80,41 +78,4 @@ def dot_finito(
     return "\n".join(lineas)
 
 
-def dot_pila(automata: AutomataPila, activo: str | None = None) -> str:
-    lineas = _encabezado()
-    for estado in automata.estados:
-        lineas.append(_nodo(estado, estado in automata.finales, estado == activo))
-    lineas.append(f'  __inicio -> "{automata.inicial}";')
-    etiquetas: dict[tuple[str, str], list[str]] = defaultdict(list)
-    for r in automata.reglas:
-        etiquetas[(r.estado, r.siguiente)].append(
-            f"{r.lee or 'λ'}, {r.tope} / {r.apila or 'λ'}"
-        )
-    lineas += _aristas_multilinea(etiquetas)
-    lineas.append("}")
-    return "\n".join(lineas)
-
-
-def dot_turing(maquina: MaquinaTuring, activo: str | None = None) -> str:
-    lineas = _encabezado()
-    for estado in maquina.estados:
-        lineas.append(_nodo(estado, estado in maquina.finales, estado == activo))
-    lineas.append(f'  __inicio -> "{maquina.inicial}";')
-    etiquetas: dict[tuple[str, str], list[str]] = defaultdict(list)
-    for r in maquina.reglas:
-        etiquetas[(r.estado, r.siguiente)].append(f"{r.lee} / {r.escribe}, {r.mueve}")
-    lineas += _aristas_multilinea(etiquetas)
-    lineas.append("}")
-    return "\n".join(lineas)
-
-
-def _aristas_multilinea(etiquetas: dict[tuple[str, str], list[str]]) -> list[str]:
-    """Una regla por renglón, para que las etiquetas largas sigan siendo legibles."""
-    salto = "\\n"
-    return [
-        f'  "{o}" -> "{d}" [label="{salto.join(reglas)}"];'
-        for (o, d), reglas in etiquetas.items()
-    ]
-
-
-__all__ = ["dot_finito", "dot_pila", "dot_turing", "MOVIMIENTOS"]
+__all__ = ["dot_finito"]
