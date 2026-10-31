@@ -2,18 +2,20 @@
 
 Proyecto final del curso Autómatas y Lenguajes Formales, Universidad Mariano Gálvez de Guatemala.
 
-La aplicación modela el proceso de un beneficio húmedo de café en Guatemala con los métodos vistos en el curso. Cada estado representa una etapa del proceso y cada símbolo del alfabeto un evento registrado. En los autómatas finitos, 1 significa que el lote aprueba el control de calidad de la etapa y 0 que se envía a reproceso.
+La aplicación modela el control de lotes de un beneficio húmedo de café en Guatemala con un autómata finito no determinista (AFND), el método indicado por el catedrático. Cada estado representa una etapa del proceso y cada símbolo un evento registrado: 1 significa que el lote aprueba el control de calidad de la etapa y 0 que se envía a reproceso.
 
-| Método | Caso de aplicación |
+| Estado | Etapa |
 | --- | --- |
-| AFD | Flujo normal de un lote: recepción, despulpado, fermentación y lavado, secado, trillado y empaque |
-| AFND | Selección del tipo de secado: al sol en patio o mecánico en guardiola |
-| AFND-ε y conversión a AFD | Escurrido automático después del lavado (transición ε), cerradura ε y método de subconjuntos |
-| Lema de Arden | Expresión regular de todas las secuencias de control que llevan un lote a exportación |
-| Autómata de Pila | Control de existencias de sacos en bodega: cada despacho debe tener un ingreso previo |
-| Máquina de Turing | Totalizador de producción: suma en notación unaria los sacos de dos turnos |
+| q0 (inicial) | Recepción y clasificación del café cereza |
+| q1 | Despulpado |
+| q2 | Fermentación y lavado |
+| q3 | Secado al sol en patio |
+| q4 | Secado mecánico en guardiola |
+| q5 (aceptación) | Trillado y empaque para exportación |
 
-La aplicación solicita los cuatro parámetros del enunciado: número de nodos, alfabeto, cadena a analizar y método de solución. Además de los casos del beneficio, incluye un modo de definición manual para analizar cualquier autómata.
+El no determinismo está en δ(q2, 1) = {q3, q4}: un lote aprobado después del lavado puede ir a secado al sol o a secado mecánico. La aplicación simula todos los caminos posibles a la vez (conjunto de estados activos) y muestra también el AFD equivalente obtenido por el método de subconjuntos.
+
+La aplicación solicita los parámetros del enunciado: número de nodos, alfabeto, cadena a analizar y método de solución (AFND). Además del caso del beneficio, incluye el modo "Autómata personalizado" para definir y analizar cualquier AFND.
 
 ## Versión en línea
 
@@ -80,21 +82,21 @@ Para volver a ejecutarla otro día basta con entrar a la carpeta del proyecto, a
 
 ## Guía de prueba
 
-1. Seleccione un método de solución en la barra lateral.
-2. Elija el origen del modelo: caso de aplicación (beneficio de café) o definición manual.
-3. Escriba la cadena a analizar. Cada caso muestra cadenas de ejemplo aceptadas y rechazadas.
-4. Use el control "Paso del recorrido" o el botón "Reproducir recorrido" para ver la evolución del autómata.
+1. Elija el modo en la barra lateral: caso de estudio (beneficio de café) o autómata personalizado.
+2. Escriba la cadena a analizar o seleccione una cadena de ejemplo.
+3. Use el control "Paso del recorrido" o el botón "Reproducir recorrido" para ver la evolución del conjunto de estados activos.
+4. Revise las pestañas "Definición formal", "Equivalencia con AFD" y "Caso de estudio".
 
 Cadenas sugeridas para la verificación:
 
-| Método | Aceptadas | Rechazadas |
+| Cadena | Resultado | Situación |
 | --- | --- | --- |
-| AFD | 1111, 110111 | 1101, 11011 |
-| AFND | 11101, 1110001 | 11001 |
-| AFND-ε | 11111, 1110111 | 1101 |
-| Autómata de Pila | 1100, 110100 | 100, 0110 |
-| Lema de Arden | 1111, 110111 | 1101 |
-| Máquina de Turing | 111011 (resultado 11111) | 111 |
+| 1111 | Aceptada | Lote sin reprocesos |
+| 11101 | Aceptada | Secado al sol interrumpido por lluvia |
+| 1110001 | Aceptada | Secado mecánico prolongado |
+| 110111 | Aceptada | Reproceso en fermentación |
+| 11001 | Rechazada | Lote devuelto a recepción |
+| 111 | Rechazada | Lote todavía en secado |
 
 ## Pruebas automáticas
 
@@ -104,24 +106,21 @@ Con el entorno virtual activo:
 python -m pytest
 ```
 
-El resultado esperado es `25 passed`.
+El resultado esperado es `11 passed`.
 
-Las pruebas verifican el recorrido del AFD del beneficio, la equivalencia entre cada AFND y su AFD por subconjuntos, que la expresión regular obtenida con el Lema de Arden reconoce exactamente el mismo lenguaje que el autómata, y los casos del autómata de pila y la máquina de Turing.
+Las pruebas verifican el recorrido por conjuntos del AFND del beneficio, el resultado de cada cadena de ejemplo, la tabla de subconjuntos y que el AFND y su AFD equivalente aceptan exactamente las mismas cadenas hasta longitud 9.
 
 ## Arquitectura
 
 ```
 app.py                  Interfaz de usuario (Streamlit)
-motor/finitos.py        AFD, AFND, AFND-ε, cerradura ε y construcción por subconjuntos
-motor/arden.py          Sistema de ecuaciones y resolución con el Lema de Arden
-motor/pila.py           Autómata de pila determinista
-motor/turing.py         Máquina de Turing determinista
+motor/finitos.py        Simulación del AFND y construcción por subconjuntos
 motor/graficos.py       Diagramas en lenguaje DOT (Graphviz)
-casos/beneficio_cafe.py Casos del beneficio de café
+casos/beneficio_cafe.py AFND del beneficio de café y cadenas de ejemplo
 tests/                  Pruebas automáticas
 ```
 
-El motor es independiente de la interfaz. La aceptación de cadenas se valida con la biblioteca automata-lib, y los procedimientos que se explican en clase (cerradura ε, subconjuntos y Lema de Arden) se calculan paso a paso en el propio código para mostrarlos en pantalla.
+El motor es independiente de la interfaz. La aceptación de cadenas se valida con la biblioteca automata-lib, y los procedimientos que se explican en clase (recorrido por conjuntos y método de subconjuntos) se calculan paso a paso en el propio código para mostrarlos en pantalla.
 
 ## Equipo
 
